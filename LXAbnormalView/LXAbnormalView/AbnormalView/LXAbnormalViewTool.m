@@ -15,10 +15,6 @@
     LXAbnormalView* abnormalView = [[LXAbnormalView alloc] init];
     abnormalView.backgroundColor = UIColor.whiteColor;
     
-    if (@available(iOS 11.0, *)) {
-        abnormalView.originalY = -inView.safeAreaInsets.top-inView.safeAreaInsets.bottom;
-    }
-    
     abnormalView.imgName = imgName;
     abnormalView.text = text;
     abnormalView.textFont = [UIFont systemFontOfSize:14];
@@ -39,10 +35,7 @@
     LXAbnormalView* abnormalView = [[LXAbnormalView alloc] init];
     abnormalView.backgroundColor = UIColor.whiteColor;
     
-    if (@available(iOS 11.0,*)) {
-        abnormalView.originalY = -inView.safeAreaInsets.top-inView.safeAreaInsets.bottom;
-    }
-    
+    abnormalView.originalY = 100;
     abnormalView.imgName = imgName;
     abnormalView.text = text;
     abnormalView.textFont = [UIFont systemFontOfSize:14];
@@ -69,10 +62,6 @@
 + (void)abnormalViewInView:(UIView *)inView imgName:(NSString *)imgName text:(NSString *)text subText:(NSString *)subtext btnTitle:(NSString *)btnTitle callback:(void (^)(NSInteger idx))callback {
     LXAbnormalView* abnormalView = [[LXAbnormalView alloc] init];
     abnormalView.backgroundColor = UIColor.whiteColor;
-    
-    if (@available(iOS 11.0,*)) {
-        abnormalView.originalY = -inView.safeAreaInsets.top-inView.safeAreaInsets.bottom;
-    }
     
     abnormalView.imgName = imgName;
     abnormalView.text = text;
@@ -105,10 +94,6 @@
 + (void)abnormalVerticalQueueViewInView:(UIView *)inView callback:(void (^)(NSInteger idx))callback {
     LXAbnormalView* abnormalView = [[LXAbnormalView alloc] init];
     abnormalView.backgroundColor = UIColor.whiteColor;
-    
-    if (@available(iOS 11.0,*)) {
-        abnormalView.originalY = -inView.safeAreaInsets.top-inView.safeAreaInsets.bottom;
-    }
     
     abnormalView.imgName = @"shouquanbohui";
     abnormalView.text = @"您暂无权限查看";
@@ -144,10 +129,6 @@
     LXAbnormalView* abnormalView = [[LXAbnormalView alloc] init];
     abnormalView.backgroundColor = UIColor.whiteColor;
     
-    if (@available(iOS 11.0,*)) {
-        abnormalView.originalY = -inView.safeAreaInsets.top-inView.safeAreaInsets.bottom;
-    }
-    
     abnormalView.text = text;
     abnormalView.textFont = [UIFont systemFontOfSize:14];
     abnormalView.textColor = kLXHexColor(0x222222);
@@ -172,9 +153,6 @@
     LXAbnormalView* abnormalView = [[LXAbnormalView alloc] init];
     abnormalView.backgroundColor = UIColor.whiteColor;
     
-    if (@available(iOS 11.0,*)) {
-        abnormalView.originalY = -inView.safeAreaInsets.top-inView.safeAreaInsets.bottom;
-    }
     abnormalView.text = text;
     abnormalView.textFont = [UIFont systemFontOfSize:14];
     abnormalView.textColor = kLXHexColor(0x222222);

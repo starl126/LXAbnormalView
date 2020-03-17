@@ -114,7 +114,7 @@ typedef void (^LXAbnormalEventBlock)(NSInteger idx);
 @property (nonatomic, strong, readwrite) NSArray<UIColor*>* btnBackgroundColorsArr;
 
 #pragma mark --- 间距设置
-///abnormal view的初始y值，默认是0，此参数可以实现整个控件下移或者上移功能，值>0为下移，<0为上移
+///abnormal view的内容控件初始y值，默认是0，此参数可以实现整个控件内容下移或者上移功能，值>0为下移，<0为上移
 @property (nonatomic, assign, readwrite) CGFloat originalY;
 ///图片和文本垂直方向的间距，默认值为20
 @property (nonatomic, assign, readwrite) CGFloat marginBetweenImageAndText;
