@@ -104,7 +104,11 @@
     
     //按钮处理
     [self p_actionForInitButtons];
-    
+}
+
+#pragma mark --- layout
+- (void)layoutSubviews {
+    [super layoutSubviews];
     //计算所有控件的有效高度
     [self p_actionForUpdateOrigin];
 }
@@ -245,20 +249,32 @@
     NSAssert(totalHeight<=self.parentView.frame.size.height, @"abnormal view's height is bigger than it's parent's");
     
     //计算控件的位置
-    CGFloat originalY = (self.parentView.frame.size.height-_originalY-totalHeight)*0.5;
+    CGRect parantFrame = self.parentView.frame;
+    UIEdgeInsets inset = UIEdgeInsetsZero;
+    if (@available(iOS 11.0,*)) {
+        inset = self.parentView.safeAreaInsets;
+        parantFrame = CGRectMake(parantFrame.origin.x+inset.left, parantFrame.origin.y+inset.top, parantFrame.size.width-inset.left-inset.right, parantFrame.size.height-inset.top-inset.bottom);
+    }else {
+        if ([self.parentView isKindOfClass:UIScrollView.class]) {
+            UIScrollView* scrollView = (UIScrollView*)self.parentView;
+            inset = scrollView.contentInset;
+            parantFrame = CGRectMake(parantFrame.origin.x+inset.left, parantFrame.origin.y+inset.top, parantFrame.size.width-inset.left-inset.right, parantFrame.size.height-inset.top-inset.bottom);
+        }
+    }
+    CGFloat originalY = (parantFrame.size.height-totalHeight)*0.5+_originalY;
     
     CGRect frame = self.iconImgView.frame;
-    CGFloat x = (self.parentView.frame.size.width-self.imgWidth)*0.5;
+    CGFloat x = (parantFrame.size.width-self.imgWidth)*0.5;
     CGFloat y = originalY;
     self.iconImgView.frame = CGRectMake(x, originalY, self.imgWidth, self.imgHeight);
     
     frame = self.textLbl.frame;
-    x = (self.parentView.frame.size.width-frame.size.width-_marginLeftXText-_marginRightXText)*0.5+_marginLeftXText;
+    x = (parantFrame.size.width-frame.size.width-_marginLeftXText-_marginRightXText)*0.5+_marginLeftXText;
     y = CGRectGetMaxY(self.iconImgView.frame)+self.marginBetweenImageAndText;
     self.textLbl.frame = CGRectMake(x, y, frame.size.width, frame.size.height);
     
     frame = self.subTextLbl.frame;
-    x = (self.parentView.frame.size.width-frame.size.width-_marginLeftXSubText-_marginRightXSubText)*0.5+_marginLeftXSubText;
+    x = (parantFrame.size.width-frame.size.width-_marginLeftXSubText-_marginRightXSubText)*0.5+_marginLeftXSubText;
     y = CGRectGetMaxY(self.textLbl.frame)+self.marginBetweenTextAndSubText;
     self.subTextLbl.frame = CGRectMake(x, y, frame.size.width, frame.size.height);
     
@@ -276,7 +292,7 @@
     }];
     
     //计算异常界面的实际尺寸和位置
-    self.frame = CGRectMake(0, _originalY, self.parentView.frame.size.width, self.parentView.frame.size.height-_originalY);
+    self.frame = CGRectMake(0, _originalY, parantFrame.size.width, parantFrame.size.height-_originalY);
 }
 ///点击按钮回调
 - (void)p_actionForClickButton:(UIButton *)sender {

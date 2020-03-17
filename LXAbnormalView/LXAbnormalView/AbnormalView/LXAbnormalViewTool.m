@@ -58,7 +58,7 @@
     
     abnormalView.marginBetweenImageAndText = 8;
     abnormalView.marginBetweenTextAndSubText = 0;
-    abnormalView.marginBetweenSubTextAndButton = 30;
+    abnormalView.marginBetweenSubTextAndButton = 8;
     abnormalView.marginLeftXLeftButton = 130;
     abnormalView.marginRightXRightButton = 130;
     
