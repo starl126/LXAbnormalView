@@ -63,8 +63,6 @@
     _marginBetweenButtons = 20;
     
     _buttonArrM = [NSMutableArray array];
-    UITapGestureRecognizer* tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(p_actionForTapGesture)];
-    [self addGestureRecognizer:tap];
 }
 - (void)willMoveToSuperview:(UIView *)newSuperview {
     if (newSuperview) {
@@ -134,6 +132,16 @@
 }
 
 #pragma mark --- actions
+- (void)setAllowTouchCallback:(BOOL)allowTouchCallback {
+    _allowTouchCallback = allowTouchCallback;
+    if (allowTouchCallback) {
+        UITapGestureRecognizer* tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(p_actionForTapGesture:)];
+        if (@available(iOS 11.0,*)) {
+            tap.name = @"abnormalViewTapEvent";
+        }
+        [self addGestureRecognizer:tap];
+    }
+}
 ///图片处理，主要是设置图片的宽高
 - (void)p_actionForInitIconImageView {
     if (_imgName) {
@@ -263,7 +271,12 @@
     //有效内容区域的高度
     CGFloat buttonsHeight = _btnHeight;
     if (_buttonQueueType == LXAbnormalButtonQueueTypeVertical) {
-        buttonsHeight = self.buttonArrM.count*_btnHeight + (self.buttonArrM.count-1)*_marginBetweenButtons;
+        @try {
+            buttonsHeight = self.buttonArrM.count*_btnHeight + (self.buttonArrM.count-1)*_marginBetweenButtons;
+        } @catch (NSException *exception) {
+            buttonsHeight = 0;
+        } @finally {
+        }
     }
     CGFloat totalHeight = self.iconImgView.frame.size.height+self.textLbl.frame.size.height+self.subTextLbl.frame.size.height+buttonsHeight+self.marginBetweenImageAndText+self.marginBetweenTextAndSubText+self.marginBetweenSubTextAndButton;
     NSAssert(totalHeight<=self.parentView.frame.size.height, @"abnormal view's height is bigger than it's parent's");
@@ -307,14 +320,48 @@
         self.abnormalEventBlock(sender.tag);
     }
 }
-- (void)p_actionForTapGesture {
+- (void)p_actionForTapGesture:(UITapGestureRecognizer*)tap {
     if (self.isAllowTouchCallback) {
+        NSInteger idx = -1;
+        if (self.tapEventText) {
+            CGPoint abnormalP = [tap locationInView:self];
+            
+            if ([self.textLbl.attributedText.string containsString:self.tapEventText]) {
+                CGPoint lblP = [self convertPoint:abnormalP toView:self.textLbl];
+                NSRange range = [self.textLbl.attributedText.string rangeOfString:self.tapEventText];
+                CGRect rect = [self p_boundingRectForCharacterRange:range attrText:self.textLbl.attributedText size:self.textLbl.frame.size];
+                CGRect amplifyRect = CGRectMake(rect.origin.x-10, rect.origin.y-10, rect.size.width+20, rect.size.height+20);
+                if (CGRectContainsPoint(amplifyRect, lblP)) {
+                    idx = -2;
+                }
+            }else if ([self.subTextLbl.attributedText.string containsString:self.tapEventText]) {
+                CGPoint lblP = [self convertPoint:abnormalP toView:self.subTextLbl];
+                NSRange range = [self.subTextLbl.attributedText.string rangeOfString:self.tapEventText];
+                CGRect rect = [self p_boundingRectForCharacterRange:range attrText:self.subTextLbl.attributedText size:self.subTextLbl.frame.size];
+                CGRect amplifyRect = CGRectMake(rect.origin.x-10, rect.origin.y-10, rect.size.width+20, rect.size.height+20);
+                if (CGRectContainsPoint(amplifyRect, lblP)) {
+                   idx = -2;
+                }
+            }else {}
+        }
         if (self.abnormalEventBlock) {
-            self.abnormalEventBlock(-1);
+            self.abnormalEventBlock(idx);
         }
     }
 }
-
+///获取文本中某段文字的rect
+- (CGRect)p_boundingRectForCharacterRange:(NSRange)range attrText:(NSAttributedString*)attrText size:(CGSize)size {
+    
+    NSTextStorage *textStorage = [[NSTextStorage alloc] initWithAttributedString:attrText];
+    NSLayoutManager *layoutManager = [[NSLayoutManager alloc] init];
+    [textStorage addLayoutManager:layoutManager];
+    NSTextContainer *textContainer = [[NSTextContainer alloc] initWithSize:size];
+    textContainer.lineFragmentPadding = 0;
+    [layoutManager addTextContainer:textContainer];
+    NSRange glyphRange;
+    [layoutManager characterRangeForGlyphRange:range actualGlyphRange:&glyphRange];
+    return [layoutManager boundingRectForGlyphRange:glyphRange inTextContainer:textContainer];
+}
 - (void)dealloc {
     NSLog(@"dealloc --- %@", NSStringFromClass(self.class));
 }

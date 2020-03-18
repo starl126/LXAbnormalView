@@ -29,7 +29,7 @@
             break;
         case 1:
         {
-            [LXAbnormalViewTool abnormalViewInView:self.view imgName:@"login_zhanghu" text:@"尚未登录" btnTitle:@"登录" callback:^(NSInteger idx) {
+            [LXAbnormalViewTool abnormalViewInView:self.view imgName:@"login_zhanghu" text:@"尚未\n登录" btnTitle:@"登录" callback:^(NSInteger idx) {
                 [LXAbnormalViewTool removeInView:weakself.view];
             }];
         }

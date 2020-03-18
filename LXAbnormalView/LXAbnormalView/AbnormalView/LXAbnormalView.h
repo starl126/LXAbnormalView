@@ -23,7 +23,7 @@ typedef NS_ENUM(uint, LXAbnormalButtonQueueType) {
 /**
  异常界面事件回调
  
- @param idx -1：触摸回调，必须设置allowTouchCallback=YES才有回调，其它按照按钮的从左到右的顺序从0递增
+ @param idx -2：设置过文本内容点击事件回调的事件 -1：触摸回调，必须设置allowTouchCallback=YES才有回调，其它按照按钮的从左到右的顺序从0递增
  */
 typedef void (^LXAbnormalEventBlock)(NSInteger idx);
 
@@ -146,9 +146,11 @@ typedef void (^LXAbnormalEventBlock)(NSInteger idx);
 ///按钮之间的间距，默认是20
 @property (nonatomic, assign, readwrite) CGFloat marginBetweenButtons;
 
-#pragma mark --- 回调设置
+#pragma mark --- 事件设置
 ///是否允许触摸回调，默认是NO
 @property (nonatomic, assign, getter=isAllowTouchCallback) BOOL allowTouchCallback;
+///对于某些文本内容加入点击事件监听，事件回调idx=-2
+@property (nonatomic, copy, readwrite) NSString* tapEventText;
 ///按钮回调
 @property (nonatomic, copy) LXAbnormalEventBlock abnormalEventBlock;
 
