@@ -15,10 +15,21 @@
 @property (nonatomic, strong, readonly) UILabel* subTextLbl;
 @property (nonatomic, strong, readonly) NSMutableArray<UIButton*>* buttonArrM;
 
+#pragma mark --- 父控件尺寸大小校准相关属性
 ///父控件
 @property (nonatomic, weak, readonly) UIView* parentView;
 ///计算性属性，校准后的父控件frame
 @property (nonatomic, assign) CGRect parentFrame;
+///父控件的safe area
+@property (nonatomic, assign) UIEdgeInsets inset;
+///父控件是否是最近控制器的根view
+@property (nonatomic, assign) BOOL equalControllerView;
+///父控件是否隐藏了导航条
+@property (nonatomic, assign) BOOL hideNavBar;
+///父控件是否隐藏了Tab Bar
+@property (nonatomic, assign) BOOL hideTabBar;
+///父控件最近的控制器是否开启了系统调整inset
+@property (nonatomic, assign) BOOL autoAdjustScrollInset;
 
 @end
 
@@ -93,8 +104,8 @@
     [self addSubview:self.textLbl];
     [self addSubview:self.subTextLbl];
     
-    //校准父控件的frame
-    [self p_adjustParentViewFrame];
+    //校准父控件及其self的frame
+    [self p_adjustFrame];
     //图片处理
     [self p_actionForInitIconImageView];
     
@@ -109,7 +120,8 @@
 }
 
 #pragma mark --- layout
-- (void)p_adjustParentViewFrame {
+- (void)p_adjustFrame {
+     [self p_actionForNavigationBarHidden];
     //计算控件的位置
     CGRect parentFrame = self.parentView.frame;
     UIEdgeInsets inset = UIEdgeInsetsZero;
@@ -117,13 +129,35 @@
         inset = self.parentView.safeAreaInsets;
         parentFrame = CGRectMake(parentFrame.origin.x+inset.left, parentFrame.origin.y+inset.top, parentFrame.size.width-inset.left-inset.right, parentFrame.size.height-inset.top-inset.bottom);
     }else {
-        if ([self.parentView isKindOfClass:UIScrollView.class]) {
-            UIScrollView* scrollView = (UIScrollView*)self.parentView;
-            inset = scrollView.contentInset;
-            parentFrame = CGRectMake(parentFrame.origin.x+inset.left, parentFrame.origin.y+inset.top, parentFrame.size.width-inset.left-inset.right, parentFrame.size.height-inset.top-inset.bottom);
+        if (self.equalControllerView) {//控制器的根view
+            if (self.hideNavBar && self.hideTabBar) {
+                parentFrame = CGRectMake(parentFrame.origin.x+inset.left, parentFrame.origin.y+inset.top, parentFrame.size.width-inset.left-inset.right, parentFrame.size.height-inset.top-inset.bottom);
+            }else if (self.hideNavBar && !self.hideTabBar) {
+                parentFrame = CGRectMake(parentFrame.origin.x+inset.left, parentFrame.origin.y+inset.top, parentFrame.size.width-inset.left-inset.right, [UIScreen mainScreen].bounds.size.height-49);
+            }else if (!self.hideNavBar && self.hideTabBar) {
+                parentFrame = CGRectMake(parentFrame.origin.x+inset.left, 64, parentFrame.size.width-inset.left-inset.right, [UIScreen mainScreen].bounds.size.height-64);
+            }else {
+                parentFrame = CGRectMake(parentFrame.origin.x+inset.left, 64, parentFrame.size.width-inset.left-inset.right, [UIScreen mainScreen].bounds.size.height-64-49);
+            }
+        }else {
+            if ([self.parentView isKindOfClass:UIScrollView.class]) {
+                UIScrollView* scrollView = (UIScrollView*)self.parentView;
+                inset = scrollView.contentInset;
+                parentFrame = CGRectMake(parentFrame.origin.x+inset.left, parentFrame.origin.y+inset.top, parentFrame.size.width-inset.left-inset.right, parentFrame.size.height-inset.top-inset.bottom);
+            }
         }
     }
     self.parentFrame = parentFrame;
+    self.inset = inset;
+    
+    //计算异常界面的实际尺寸和位置
+    CGFloat y = self.parentFrame.origin.y-self.parentView.frame.origin.y;
+    if ([self.parentView isKindOfClass:UIScrollView.class] && self.autoAdjustScrollInset) {
+        y = -self.parentView.frame.origin.y;
+    }
+    //如果是非ios11系统则，safeAreaInsets始终为0
+    CGFloat height = self.parentFrame.size.height+self.inset.bottom;
+    self.frame = CGRectMake(0, y, self.parentFrame.size.width, height);
 }
 - (void)layoutSubviews {
     [super layoutSubviews];
@@ -265,7 +299,7 @@
         }
     }
 }
-///更新控件的位置
+///更新子控件的位置
 - (void)p_actionForUpdateOrigin {
 
     //有效内容区域的高度
@@ -310,9 +344,6 @@
         }
         obj.frame = CGRectMake(frame.origin.x, y, frame.size.width, frame.size.height);
     }];
-    
-    //计算异常界面的实际尺寸和位置
-    self.frame = CGRectMake(0, 0, self.parentFrame.size.width, self.parentFrame.size.height);
 }
 ///点击按钮回调
 - (void)p_actionForClickButton:(UIButton *)sender {
@@ -320,6 +351,48 @@
         self.abnormalEventBlock(sender.tag);
     }
 }
+///判断当前控件的导航条是否隐藏
+- (void)p_actionForNavigationBarHidden {
+    BOOL hideNavBar = YES;
+    BOOL hideTabBar = YES;
+    BOOL autoAdjustScrollInset = YES;
+    BOOL rootView = NO;
+    UIResponder* nextResponder = self.parentView.nextResponder;
+    
+    while (nextResponder) {
+        if ([nextResponder isKindOfClass:UIViewController.class] && !rootView) {
+            rootView = [((UIViewController*)nextResponder).view isEqual:self.parentView];
+            autoAdjustScrollInset = ((UIViewController*)nextResponder).automaticallyAdjustsScrollViewInsets;
+        }else if ([nextResponder isKindOfClass:UINavigationController.class] && hideNavBar) {
+            hideNavBar = ((UINavigationController*)nextResponder).navigationBar.isHidden;
+        }else if ([nextResponder isKindOfClass:UITabBarController.class] && hideTabBar) {
+            hideTabBar = ((UITabBarController*)nextResponder).tabBar.isHidden;
+        }else if ([nextResponder isKindOfClass:UIApplication.class]) {
+            break;
+        }
+        nextResponder = nextResponder.nextResponder;
+    }
+    self.hideNavBar = hideNavBar;
+    self.hideTabBar = hideTabBar;
+    self.autoAdjustScrollInset = autoAdjustScrollInset;
+    self.equalControllerView = rootView;
+}
+///判断当前parent view是否是控制器的根view
+- (BOOL)p_actionForParentViewIsRootControllerView {
+    BOOL rootView = NO;
+    UIResponder* nextResponder = self.nextResponder;
+    while (nextResponder) {
+        if ([nextResponder isKindOfClass:UIViewController.class]) {
+            rootView = [((UIViewController*)nextResponder).view isEqual:self.parentView];
+            break;
+        }else if ([nextResponder isKindOfClass:UIApplication.class]) {
+            break;
+        }
+        nextResponder = nextResponder.nextResponder;
+    }
+    return rootView;
+}
+///手势点击事件
 - (void)p_actionForTapGesture:(UITapGestureRecognizer*)tap {
     if (self.isAllowTouchCallback) {
         NSInteger idx = -1;
