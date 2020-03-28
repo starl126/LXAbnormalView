@@ -82,47 +82,113 @@
     }
 }
 - (void)p_setupView {
-    _iconImgView = UIImageView.alloc.init;
-    _iconImgView.backgroundColor = _imgBackgroundColor;
-    _iconImgView.contentMode = _imgContentMode;
-    
-    _textLbl = UILabel.alloc.init;
-    _textLbl.numberOfLines = 0;
-    _textLbl.textAlignment = _textAlignment;
-    _textLbl.backgroundColor = _textBackgroundColor;
-    _textLbl.preferredMaxLayoutWidth = _parentView.frame.size.width-_marginLeftXText-_marginRightXText;
-    _textLbl.frame = CGRectMake(0, 0, _textLbl.preferredMaxLayoutWidth, 0);
-    
-    _subTextLbl = UILabel.alloc.init;
-    _subTextLbl.textAlignment = _subTextAlignment;
-    _subTextLbl.numberOfLines = 0;
-    _subTextLbl.backgroundColor = _subTextBackgroundColor;
-    _subTextLbl.preferredMaxLayoutWidth = _parentView.frame.size.width-_marginLeftXSubText-_marginRightXSubText;
-    _subTextLbl.frame = CGRectMake(0, 0, _subTextLbl.preferredMaxLayoutWidth, 0);
-    
-    [self addSubview:self.iconImgView];
-    [self addSubview:self.textLbl];
-    [self addSubview:self.subTextLbl];
-    
-    //校准父控件及其self的frame
-    [self p_adjustFrame];
-    //图片处理
     [self p_actionForInitIconImageView];
-    
-    //文本处理
     [self p_actionForInitTextLabel];
-    
-    //子文本处理
     [self p_actionForInitSubTextLabel];
-    
-    //按钮处理
     [self p_actionForInitButtons];
 }
 
 #pragma mark --- layout
+- (void)layoutSubviews {
+    [super layoutSubviews];
+    
+    [self p_adjustFrame];
+    [self p_actionForSizeImageView];
+    [self p_actionForSizeTextLabel];
+    [self p_actionForSizeSubTextLabel];
+    [self p_actionForSizeButtons];
+    
+    ///计算所有控件的有效高度
+    [self p_actionForUpdateOrigin];
+}
+///更新图片的size
+- (void)p_actionForSizeImageView {
+    if (_imgName) {
+        UIImage* img = [UIImage imageNamed:_imgName];
+        if (img) {
+            if (_imgWidth < 1) {
+                _imgWidth = img.size.width;
+            }
+            if (_imgHeight < 1) {
+                _imgHeight = img.size.height;
+            }
+            _iconImgView.frame = CGRectMake(0, 0, _imgWidth, _imgHeight);
+            _iconImgView.image = img;
+        }
+    }
+}
+///更新主标题的size
+- (void)p_actionForSizeTextLabel {
+    _textLbl.preferredMaxLayoutWidth = _parentView.frame.size.width-_marginLeftXText-_marginRightXText;
+    [_textLbl sizeToFit];
+    _textLbl.frame = CGRectMake(0, 0, _textLbl.preferredMaxLayoutWidth, _textLbl.frame.size.height);
+}
+///更新子标题的size
+- (void)p_actionForSizeSubTextLabel {
+    _subTextLbl.preferredMaxLayoutWidth = _parentView.frame.size.width-_marginLeftXSubText-_marginRightXSubText;
+    [_subTextLbl sizeToFit];
+    _subTextLbl.frame = CGRectMake(0, 0, _subTextLbl.preferredMaxLayoutWidth, _subTextLbl.frame.size.height);
+}
+///更新按钮的size
+- (void)p_actionForSizeButtons {
+    
+    [self.buttonArrM enumerateObjectsUsingBlock:^(UIButton * _Nonnull btn, NSUInteger idx, BOOL * _Nonnull stop) {
+        
+        if (_buttonQueueType == LXAbnormalButtonQueueTypeHorizonal) {//按钮水平排列
+            CGFloat width = (_parentView.frame.size.width-_marginLeftXLeftButton-_marginRightXRightButton-(_btnTitlesArr.count-1)*_marginBetweenButtons)/_btnTitlesArr.count;
+            
+            CGFloat x = _marginLeftXLeftButton+idx*(width+_marginBetweenButtons);
+            btn.frame = CGRectMake(x, 0, width, _btnHeight);
+        }else {//按钮垂直排列
+            CGFloat width = _parentView.frame.size.width-_marginLeftXLeftButton-_marginRightXRightButton;
+            btn.frame = CGRectMake(_marginLeftXLeftButton, 0, width, _btnHeight);
+        }
+        
+        CGFloat borderWidth = 0;
+        CGFloat cornerRadius = 0;
+        CGColorRef colorRef = NULL;
+        @try {
+            borderWidth = _btnBorderWidthArr[idx].floatValue;
+        } @catch (NSException *exception) {
+        } @finally {
+        }
+        
+        @try {
+            cornerRadius = _btnCornerRadiusArr[idx].floatValue;
+            btn.layer.cornerRadius = cornerRadius;
+        } @catch (NSException *exception) {
+            
+        } @finally {
+        }
+        @try {
+            colorRef = _btnBorderColorArr[idx].CGColor;
+        } @catch (NSException *exception) {
+        } @finally {
+        }
+        if (borderWidth > 0) {
+            CAShapeLayer* shape = [CAShapeLayer layer];
+            shape.frame = btn.bounds;
+            UIBezierPath* path = [UIBezierPath bezierPathWithRoundedRect:btn.bounds byRoundingCorners:UIRectCornerAllCorners cornerRadii:CGSizeMake(cornerRadius, cornerRadius)];
+            shape.path = path.CGPath;
+            shape.strokeStart = 0;
+            shape.strokeEnd = 1;
+            shape.contentsScale = [UIScreen mainScreen].scale;
+            shape.lineWidth = borderWidth;
+            shape.lineCap = kCALineCapRound;
+            shape.lineJoin = kCALineJoinRound;
+            shape.strokeColor = colorRef;
+            shape.fillColor = [UIColor clearColor].CGColor;
+            [btn.layer addSublayer:shape];
+        }
+    }];
+}
+///校准父控件及其self的frame
 - (void)p_adjustFrame {
-     [self p_actionForNavigationBarHidden];
-    //计算控件的位置
+    
+    ///获取所有影响frame的因素
+    [self p_actionForGetStatesAffectFrame];
+    
+    ///计算控件的位置
     CGRect parentFrame = self.parentView.frame;
     UIEdgeInsets inset = UIEdgeInsetsZero;
     if (@available(iOS 11.0,*)) {
@@ -159,157 +225,16 @@
     CGFloat height = self.parentFrame.size.height+self.inset.bottom;
     self.frame = CGRectMake(0, y, self.parentFrame.size.width, height);
 }
-- (void)layoutSubviews {
-    [super layoutSubviews];
-    //计算所有控件的有效高度
-    [self p_actionForUpdateOrigin];
-}
-
-#pragma mark --- actions
-- (void)setAllowTouchCallback:(BOOL)allowTouchCallback {
-    _allowTouchCallback = allowTouchCallback;
-    if (allowTouchCallback) {
-        UITapGestureRecognizer* tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(p_actionForTapGesture:)];
-        if (@available(iOS 11.0,*)) {
-            tap.name = @"abnormalViewTapEvent";
-        }
-        [self addGestureRecognizer:tap];
-    }
-}
-///图片处理，主要是设置图片的宽高
-- (void)p_actionForInitIconImageView {
-    if (_imgName) {
-        UIImage* img = [UIImage imageNamed:_imgName];
-        if (img) {
-            if (_imgWidth < 1) {
-                _imgWidth = img.size.width;
-            }
-            if (_imgHeight < 1) {
-                _imgHeight = img.size.height;
-            }
-            _iconImgView.frame = CGRectMake(0, 0, _imgWidth, _imgHeight);
-            _iconImgView.image = img;
-        }
-    }
-}
-///文本处理，主要是设置文本的宽高
-- (void)p_actionForInitTextLabel {
-    if (_text) {
-        _textLbl.text = _text;
-        _textLbl.font = _textFont;
-        _textLbl.textColor = _textColor;
-    }
-    if (_attText) {
-        _textLbl.attributedText = _attText;
-    }
-    [_textLbl sizeToFit];
-}
-///子文本处理，主要是设置子文本的宽高
-- (void)p_actionForInitSubTextLabel {
-    if (_subText) {
-        _subTextLbl.text = _subText;
-        _subTextLbl.font = _subTextFont;
-        _subTextLbl.textColor = _subTextColor;
-    }
-    if (_subAttText) {
-        _subTextLbl.attributedText = _subAttText;
-    }
-    [_subTextLbl sizeToFit];
-}
-///按钮处理，主要是设置按钮的x和size
-- (void)p_actionForInitButtons {
-    if (_btnTitlesArr && _btnTitlesArr.count) {
-        for (int i=0; i<_btnTitlesArr.count; i++) {
-            UIButton* btn = UIButton.alloc.init;
-            [btn setTitle:_btnTitlesArr[i] forState:UIControlStateNormal];
-            
-            if (_btnColorsArr && _btnColorsArr.count) {
-                @try {
-                    [btn setTitleColor:_btnColorsArr[i] forState:UIControlStateNormal];
-                } @catch (NSException *exception) {
-                    [btn setTitleColor:kLXHexColor(0x222222) forState:UIControlStateNormal];
-                } @finally {
-                    
-                }
-            }else {
-                [btn setTitleColor:kLXHexColor(0x222222) forState:UIControlStateNormal];
-            }
-            
-            if (_btnFontsArr && _btnFontsArr.count) {
-                @try {
-                    btn.titleLabel.font = _btnFontsArr[i];
-                } @catch (NSException *exception) {
-                    btn.titleLabel.font = [UIFont systemFontOfSize:15];
-                } @finally {
-                    
-                }
-            }else {
-                btn.titleLabel.font = [UIFont systemFontOfSize:15];
-            }
-            
-            if (_btnBorderWidthArr && _btnBorderWidthArr.count) {
-                @try {
-                    btn.layer.borderWidth = _btnBorderWidthArr[i].floatValue;
-                } @catch (NSException *exception) {
-                    btn.layer.borderWidth = 0;
-                } @finally {
-                    
-                }
-            }
-            
-            if (_btnBorderColorArr && _btnBorderColorArr.count) {
-                @try {
-                    btn.layer.borderColor = _btnBorderColorArr[i].CGColor;
-                } @catch (NSException *exception) {
-                } @finally {
-                    
-                }
-            }
-            
-            if (_btnCornerRadiusArr && _btnCornerRadiusArr.count) {
-                @try {
-                    btn.layer.cornerRadius = _btnCornerRadiusArr[i].floatValue;
-                } @catch (NSException *exception) {
-                    btn.layer.cornerRadius = 0;
-                } @finally {
-                    
-                }
-            }
-            if (_btnBackgroundColorsArr && _btnBackgroundColorsArr.count) {
-                @try {
-                    btn.backgroundColor = _btnBackgroundColorsArr[i];
-                } @catch (NSException *exception) {
-                    
-                } @finally {
-                    
-                }
-            }
-            if (_buttonQueueType == LXAbnormalButtonQueueTypeHorizonal) {//按钮水平排列
-                CGFloat width = (_parentView.frame.size.width-_marginLeftXLeftButton-_marginRightXRightButton-(_btnTitlesArr.count-1)*_marginBetweenButtons)/_btnTitlesArr.count;
-                CGFloat x = _marginLeftXLeftButton+i*(width+_marginBetweenButtons);
-                btn.frame = CGRectMake(x, 0, width, _btnHeight);
-            }else {//按钮垂直排列
-                CGFloat width = _parentView.frame.size.width-_marginLeftXLeftButton-_marginRightXRightButton;
-                btn.frame = CGRectMake(_marginLeftXLeftButton, 0, width, _btnHeight);
-            }
-            btn.tag = i;
-            [btn addTarget:self action:@selector(p_actionForClickButton:) forControlEvents:UIControlEventTouchUpInside];
-            [self.buttonArrM addObject:btn];
-            [self addSubview:btn];
-        }
-    }
-}
-///更新子控件的位置
+///更新控件的位置
 - (void)p_actionForUpdateOrigin {
 
     //有效内容区域的高度
     CGFloat buttonsHeight = _btnHeight;
     if (_buttonQueueType == LXAbnormalButtonQueueTypeVertical) {
-        @try {
-            buttonsHeight = self.buttonArrM.count*_btnHeight + (self.buttonArrM.count-1)*_marginBetweenButtons;
-        } @catch (NSException *exception) {
+        if (self.buttonArrM.count == 0) {
             buttonsHeight = 0;
-        } @finally {
+        }else {
+            buttonsHeight = self.buttonArrM.count*_btnHeight + (self.buttonArrM.count-1)*_marginBetweenButtons;
         }
     }
     CGFloat totalHeight = self.iconImgView.frame.size.height+self.textLbl.frame.size.height+self.subTextLbl.frame.size.height+buttonsHeight+self.marginBetweenImageAndText+self.marginBetweenTextAndSubText+self.marginBetweenSubTextAndButton;
@@ -345,14 +270,138 @@
         obj.frame = CGRectMake(frame.origin.x, y, frame.size.width, frame.size.height);
     }];
 }
-///点击按钮回调
+#pragma mark --- init
+///图片控件默认处理
+- (void)p_actionForInitIconImageView {
+    _iconImgView = UIImageView.alloc.init;
+    _iconImgView.backgroundColor = _imgBackgroundColor;
+    _iconImgView.contentMode = _imgContentMode;
+    [self addSubview:_iconImgView];
+}
+///主文本控件默认处理
+- (void)p_actionForInitTextLabel {
+    _textLbl = UILabel.alloc.init;
+    _textLbl.numberOfLines = 0;
+    _textLbl.textAlignment = _textAlignment;
+    _textLbl.backgroundColor = _textBackgroundColor;
+    
+    if (_text) {
+        _textLbl.text = _text;
+        _textLbl.font = _textFont;
+        _textLbl.textColor = _textColor;
+    }
+    if (_attText) {
+        _textLbl.attributedText = _attText;
+    }
+    [self addSubview:_textLbl];
+}
+///子文本控件默认处理
+- (void)p_actionForInitSubTextLabel {
+    
+    _subTextLbl = UILabel.alloc.init;
+    _subTextLbl.textAlignment = _subTextAlignment;
+    _subTextLbl.numberOfLines = 0;
+    _subTextLbl.backgroundColor = _subTextBackgroundColor;
+
+    if (_subText) {
+        _subTextLbl.text = _subText;
+        _subTextLbl.font = _subTextFont;
+        _subTextLbl.textColor = _subTextColor;
+    }
+    if (_subAttText) {
+        _subTextLbl.attributedText = _subAttText;
+    }
+    [self addSubview:_subTextLbl];
+}
+///按钮控件默认处理
+- (void)p_actionForInitButtons {
+    if (_btnTitlesArr && _btnTitlesArr.count) {
+        for (int i=0; i<_btnTitlesArr.count; i++) {
+            UIButton* btn = UIButton.alloc.init;
+            [btn setTitle:_btnTitlesArr[i] forState:UIControlStateNormal];
+            
+            if (_btnColorsArr && _btnColorsArr.count) {
+                @try {
+                    [btn setTitleColor:_btnColorsArr[i] forState:UIControlStateNormal];
+                } @catch (NSException *exception) {
+                    [btn setTitleColor:kLXHexColor(0x222222) forState:UIControlStateNormal];
+                } @finally {
+                    
+                }
+            }else {
+                [btn setTitleColor:kLXHexColor(0x222222) forState:UIControlStateNormal];
+            }
+            
+            if (_btnFontsArr && _btnFontsArr.count) {
+                @try {
+                    btn.titleLabel.font = _btnFontsArr[i];
+                } @catch (NSException *exception) {
+                    btn.titleLabel.font = [UIFont systemFontOfSize:16];
+                } @finally {
+                    
+                }
+            }else {
+                btn.titleLabel.font = [UIFont systemFontOfSize:16];
+            }
+            
+            UIColor* backgroundColor = nil;
+            if (_btnBackgroundColorsArr && _btnBackgroundColorsArr.count) {
+                @try {
+                    backgroundColor = _btnBackgroundColorsArr[i];
+                    btn.backgroundColor = backgroundColor;
+                } @catch (NSException *exception) {
+                    
+                } @finally {
+                    
+                }
+            }
+            
+            CGFloat cornerRadius = 0;
+            CGColorRef colorRef = NULL;
+            
+            @try {
+                cornerRadius = _btnCornerRadiusArr[i].floatValue;
+                btn.layer.cornerRadius = cornerRadius;
+            } @catch (NSException *exception) {
+                
+            } @finally {
+            }
+            
+            @try {
+                colorRef = _btnBorderColorArr[i].CGColor;
+                btn.layer.borderColor = colorRef;
+            } @catch (NSException *exception) {
+                      
+            } @finally {
+            }
+            
+            btn.tag = i;
+            [btn addTarget:self action:@selector(p_actionForClickButton:) forControlEvents:UIControlEventTouchUpInside];
+      
+            [self.buttonArrM addObject:btn];
+            [self addSubview:btn];
+        }
+    }
+}
+#pragma mark --- event
+- (void)setAllowTouchCallback:(BOOL)allowTouchCallback {
+    _allowTouchCallback = allowTouchCallback;
+    if (allowTouchCallback) {
+        UITapGestureRecognizer* tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(p_actionForTapGesture:)];
+        if (@available(iOS 11.0,*)) {
+            tap.name = @"abnormalViewTapEvent";
+        }
+        [self addGestureRecognizer:tap];
+    }
+}
+///判断当前控件导航条隐藏、Tab Bar隐藏、最近控制器是否自动开启了系统自调整滚动控件功能、该parentView是否是最近控制器的根控制器
 - (void)p_actionForClickButton:(UIButton *)sender {
     if (self.abnormalEventBlock) {
         self.abnormalEventBlock(sender.tag);
     }
 }
 ///判断当前控件的导航条是否隐藏
-- (void)p_actionForNavigationBarHidden {
+- (void)p_actionForGetStatesAffectFrame {
     BOOL hideNavBar = YES;
     BOOL hideTabBar = YES;
     BOOL autoAdjustScrollInset = YES;
@@ -376,21 +425,6 @@
     self.hideTabBar = hideTabBar;
     self.autoAdjustScrollInset = autoAdjustScrollInset;
     self.equalControllerView = rootView;
-}
-///判断当前parent view是否是控制器的根view
-- (BOOL)p_actionForParentViewIsRootControllerView {
-    BOOL rootView = NO;
-    UIResponder* nextResponder = self.nextResponder;
-    while (nextResponder) {
-        if ([nextResponder isKindOfClass:UIViewController.class]) {
-            rootView = [((UIViewController*)nextResponder).view isEqual:self.parentView];
-            break;
-        }else if ([nextResponder isKindOfClass:UIApplication.class]) {
-            break;
-        }
-        nextResponder = nextResponder.nextResponder;
-    }
-    return rootView;
 }
 ///手势点击事件
 - (void)p_actionForTapGesture:(UITapGestureRecognizer*)tap {
