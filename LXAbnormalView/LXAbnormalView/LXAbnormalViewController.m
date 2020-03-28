@@ -23,6 +23,7 @@
 #pragma mark --- UITableViewDelegate,UITableViewDataSource
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     __weak typeof(self) weakself = self;
+ 
     switch (indexPath.row) {
         case 0:
             [LXAbnormalViewTool abnormalViewInView:self.view imgName:@"kongbaiye" text:@"暂无任何数据"];
@@ -30,6 +31,7 @@
         case 1:
         {
             [LXAbnormalViewTool abnormalViewInView:self.view imgName:@"login_zhanghu" text:@"尚未\n登录" btnTitle:@"登录" callback:^(NSInteger idx) {
+                NSLog(@"点击了事件索引 idx = %zd", idx);
                 [LXAbnormalViewTool removeInView:weakself.view];
             }];
         }
@@ -37,6 +39,7 @@
         case 2:
         {
             [LXAbnormalViewTool abnormalViewInView:self.view imgName:@"gouwuchekong" text:@"购物车为空" subText:@"暂无任何商品信息" btnTitle:@"去购物" callback:^(NSInteger idx) {
+                NSLog(@"点击了事件索引 idx = %zd", idx);
                 [LXAbnormalViewTool removeInView:weakself.view];
             }];
         }
@@ -44,13 +47,14 @@
         case 3:
         {
             [LXAbnormalViewTool abnormalVerticalQueueViewInView:self.view callback:^(NSInteger idx) {
+                NSLog(@"点击了事件索引 idx = %zd", idx);
                 [LXAbnormalViewTool removeInView:weakself.view];
             }];
         }
             break;
         case 4:
         {
-            [LXAbnormalViewTool abnormalViewInView:self.view text:@"服务器线程拥堵" subText:@"没事，大佬们多搞几台电脑" callback:^{
+            [LXAbnormalViewTool abnormalViewInView:self.view text:@"服务器线程拥堵" subText:@"没事，大佬们多搞几台电脑" callback:^ {
                 [LXAbnormalViewTool removeInView:weakself.view];
             }];
         }
@@ -58,6 +62,15 @@
         case 5:
         {
             [LXAbnormalViewTool abnormalViewInView:self.view text:@"您尚无修改权限，请联系管理员" btnTitle:@"确定" callback:^(NSInteger idx) {
+                NSLog(@"点击了事件索引 idx = %zd", idx);
+                [LXAbnormalViewTool removeInView:weakself.view];
+            }];
+        }
+            break;
+        case 6:
+        {
+            [LXAbnormalViewTool abnormalViewInView:self.view text:@"您尚无修改权限，请联系管理员" tapContent:@"联系管理员" btnTitle:@"确定" callback:^(NSInteger idx) {
+                NSLog(@"点击了事件索引 idx = %zd", idx);
                 [LXAbnormalViewTool removeInView:weakself.view];
             }];
         }

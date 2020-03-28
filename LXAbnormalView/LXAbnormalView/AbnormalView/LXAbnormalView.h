@@ -23,7 +23,8 @@ typedef NS_ENUM(uint, LXAbnormalButtonQueueType) {
 /**
  异常界面事件回调
  
- @param idx -2：设置过文本内容点击事件回调的事件 -1：触摸回调，必须设置allowTouchCallback=YES才有回调，其它按照按钮的从左到右的顺序从0递增
+ @param idx -2：设置过文本内容点击事件回调的事件 -1：触摸回调，其它按照按钮的从左到右的顺序从0递增
+ @warning -2和-1必须设置allowTouchCallback=YES才有回调
  */
 typedef void (^LXAbnormalEventBlock)(NSInteger idx);
 
@@ -33,7 +34,7 @@ typedef void (^LXAbnormalEventBlock)(NSInteger idx);
 
 #pragma mark --- 图片属性设置
 ///图片名称
-@property (nonatomic, copy, readwrite) NSString* imgName;
+@property (nonatomic, copy, readwrite, nullable) NSString* imgName;
 
 ///图片宽度，默认值图片的实际宽度
 @property (nonatomic, assign, readwrite) CGFloat imgWidth;
@@ -45,73 +46,73 @@ typedef void (^LXAbnormalEventBlock)(NSInteger idx);
 @property (nonatomic, assign, readwrite) UIViewContentMode imgContentMode;
 
 ///图片的背景颜色，默认是无色
-@property (nonatomic, strong, readwrite) UIColor* imgBackgroundColor;
+@property (nonatomic, strong, readwrite, nullable) UIColor* imgBackgroundColor;
 
 #pragma mark --- 文本属性设置
 ///文本内容，若同时设置了富文本，则富文本优先级高，富文本下文本内容的其他属性设置无效
-@property (nonatomic, copy, readwrite) NSString* text;
+@property (nonatomic, copy, readwrite, nullable) NSString* text;
 
 ///文本富文本，不为空才会创建文本控件
-@property (nonatomic, copy, readwrite) NSAttributedString* attText;
+@property (nonatomic, copy, readwrite, nullable) NSAttributedString* attText;
 
 ///文本字体大小，默认系统16，富文本无效
-@property (nonatomic, strong, readwrite) UIFont* textFont;
+@property (nonatomic, strong, readwrite, nullable) UIFont* textFont;
 
 ///文本颜色，默认系统darkTextColor，富文本无效
-@property (nonatomic, strong, readwrite) UIColor* textColor;
+@property (nonatomic, strong, readwrite, nullable) UIColor* textColor;
 
 ///文本的背景颜色
-@property (nonatomic, strong, readwrite) UIColor* textBackgroundColor;
+@property (nonatomic, strong, readwrite, nullable) UIColor* textBackgroundColor;
 
 ///文本对齐方式，默认是center，富文本无效
 @property (nonatomic, assign) NSTextAlignment textAlignment;
 
 
 ///子文本内容，若同时设置了富文本，则富文本优先级高，富文本下文本内容的其他属性设置无效
-@property (nonatomic, copy, readwrite) NSString* subText;
+@property (nonatomic, copy, readwrite, nullable) NSString* subText;
 
 ///子文本富文本，不为空才会创建子文本控件
-@property (nonatomic, copy, readwrite) NSAttributedString* subAttText;
+@property (nonatomic, copy, readwrite, nullable) NSAttributedString* subAttText;
 
 ///子文本字体大小，默认系统15，富文本无效
-@property (nonatomic, strong, readwrite) UIFont* subTextFont;
+@property (nonatomic, strong, readwrite, nullable) UIFont* subTextFont;
 
 ///子文本颜色默认系统lightTextColor，富文本无效
-@property (nonatomic, strong, readwrite) UIColor* subTextColor;
+@property (nonatomic, strong, readwrite, nullable) UIColor* subTextColor;
 
 ///子文本的背景颜色
-@property (nonatomic, strong, readwrite) UIColor* subTextBackgroundColor;
+@property (nonatomic, strong, readwrite, nullable) UIColor* subTextBackgroundColor;
 
 ///子文本对齐方式，默认是center，富文本无效
 @property (nonatomic, assign) NSTextAlignment subTextAlignment;
 
 #pragma mark --- 按钮属性设置,注意按钮的宽度是根据间距和父控件宽度动态计算的
 ///按钮的标题数组，数组个数不等于0才会创建按钮控件
-@property (nonatomic, strong, readwrite) NSArray<NSString*>* btnTitlesArr;
+@property (nonatomic, strong, readwrite, nullable) NSArray<NSString*>* btnTitlesArr;
 
 ///按钮排列顺序，默认是水平排列
 @property (nonatomic, assign, readwrite) LXAbnormalButtonQueueType buttonQueueType;
 
 ///按钮的标题颜色，默认0x222222
-@property (nonatomic, strong, readwrite) NSArray<UIColor*>* btnColorsArr;
+@property (nonatomic, strong, readwrite, nullable) NSArray<UIColor*>* btnColorsArr;
 
 ///按钮的标题字体大小，默认系统15
-@property (nonatomic, strong, readwrite) NSArray<UIFont*>* btnFontsArr;
+@property (nonatomic, strong, readwrite, nullable) NSArray<UIFont*>* btnFontsArr;
 
 ///按钮的border宽度
-@property (nonatomic, strong, readwrite) NSArray<NSNumber*>* btnBorderWidthArr;
+@property (nonatomic, strong, readwrite, nullable) NSArray<NSNumber*>* btnBorderWidthArr;
 
 ///按钮的border颜色
-@property (nonatomic, strong, readwrite) NSArray<UIColor*>* btnBorderColorArr;
+@property (nonatomic, strong, readwrite, nullable) NSArray<UIColor*>* btnBorderColorArr;
 
 ///按钮的corner radius
-@property (nonatomic, strong, readwrite) NSArray<NSNumber*>* btnCornerRadiusArr;
+@property (nonatomic, strong, readwrite, nullable) NSArray<NSNumber*>* btnCornerRadiusArr;
 
 ///按钮高度，默认是44
 @property (nonatomic, assign, readwrite) CGFloat btnHeight;
 
 ///按钮背景颜色
-@property (nonatomic, strong, readwrite) NSArray<UIColor*>* btnBackgroundColorsArr;
+@property (nonatomic, strong, readwrite, nullable) NSArray<UIColor*>* btnBackgroundColorsArr;
 
 #pragma mark --- 间距设置
 ///abnormal view的内容控件初始y值，默认是0，此参数可以实现整个控件内容下移或者上移功能，值>0为下移，<0为上移
@@ -149,10 +150,10 @@ typedef void (^LXAbnormalEventBlock)(NSInteger idx);
 #pragma mark --- 事件设置
 ///是否允许触摸回调，默认是NO
 @property (nonatomic, assign, getter=isAllowTouchCallback) BOOL allowTouchCallback;
-///对于某些文本内容加入点击事件监听，事件回调idx=-2
-@property (nonatomic, copy, readwrite) NSString* tapEventText;
-///按钮回调
-@property (nonatomic, copy) LXAbnormalEventBlock abnormalEventBlock;
+///触摸时，需要回调的文字文本，如果设置，则回调，回调idx为-2
+@property (nonatomic, copy, readwrite, nullable) NSString* tapEventText;
+///界面内部事件回调 具体可以查看定义
+@property (nonatomic, copy, nullable) LXAbnormalEventBlock abnormalEventBlock;
 
 @end
 

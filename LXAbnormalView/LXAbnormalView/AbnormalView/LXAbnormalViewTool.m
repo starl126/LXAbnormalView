@@ -171,6 +171,30 @@
     abnormalView.abnormalEventBlock = callback;
     [inView addSubview:abnormalView];
 }
++ (void)abnormalViewInView:(UIView *)inView text:(NSString *)text tapContent:(NSString*)tapContent btnTitle:(NSString *)btnTitle callback:(void (^)(NSInteger idx))callback {
+    LXAbnormalView* abnormalView = [[LXAbnormalView alloc] init];
+    abnormalView.backgroundColor = UIColor.whiteColor;
+    
+    abnormalView.text = text;
+    abnormalView.textFont = [UIFont systemFontOfSize:14];
+    abnormalView.textColor = kLXHexColor(0x222222);
+    
+    abnormalView.btnTitlesArr = @[btnTitle];
+    abnormalView.btnBorderColorArr = @[kLXHexColor(0x999999)];
+    abnormalView.btnBorderWidthArr = @[@(0.5)];
+    abnormalView.btnHeight = 34;
+    
+    abnormalView.marginBetweenImageAndText = 0;
+    abnormalView.marginBetweenTextAndSubText = 15;
+    abnormalView.marginBetweenSubTextAndButton = 0;
+    abnormalView.marginLeftXLeftButton = 120;
+    abnormalView.marginRightXRightButton = 120;
+    
+    abnormalView.allowTouchCallback = YES;
+    abnormalView.tapEventText = tapContent;
+    abnormalView.abnormalEventBlock = callback;
+    [inView addSubview:abnormalView];
+}
 
 + (void)removeInView:(UIView *)inView {
     [inView.subviews enumerateObjectsUsingBlock:^(__kindof UIView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {

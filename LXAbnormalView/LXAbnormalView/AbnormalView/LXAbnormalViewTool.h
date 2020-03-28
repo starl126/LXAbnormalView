@@ -33,6 +33,9 @@ NS_ASSUME_NONNULL_BEGIN
 ///文本按钮
 + (void)abnormalViewInView:(UIView *)inView text:(NSString *)text btnTitle:(NSString *)btnTitle callback:(void (^)(NSInteger idx))callback;
 
+///文本内容点击事件
++ (void)abnormalViewInView:(UIView *)inView text:(NSString *)text tapContent:(NSString*)tapContent btnTitle:(NSString *)btnTitle callback:(void (^)(NSInteger idx))callback;
+
 @end
 
 NS_ASSUME_NONNULL_END
